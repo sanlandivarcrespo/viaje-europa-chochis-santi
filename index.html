@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tour de Mamá · Madrid → Andalucía → Lisboa → Roma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azulejo:#14406E;       /* azul azulejo profundo */
+  --azulejo-claro:#3C6EA5;
+  --teja:#2E8C83;          /* verde teja andaluz */
+  --azafran:#E8A13D;       /* acento azafrán */
+  --papel:#F7F3EA;         /* fondo papel de billete */
+  --tarjeta:#FFFFFF;
+  --tinta:#22303C;
+  --tinta-suave:#5B6B78;
+  --linea:#E3DCCD;
+  --editable:#FFF6DF;      /* campos que se llenan */
+  --critico:#FBE3D2;
+  --ok:#E4F1E4;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Public Sans",system-ui,sans-serif;
+  background:var(--papel);
+  color:var(--tinta);
+  font-size:16px;
+  line-height:1.5;
+  padding-bottom:110px;
+}
+/* ---------- cabecera ---------- */
+header{
+  background:var(--azulejo);
+  color:#fff;
+  padding:34px 20px 26px;
+  background-image:
+    radial-gradient(circle at 12px 12px, rgba(255,255,255,.07) 3px, transparent 3px),
+    radial-gradient(circle at 36px 36px, rgba(255,255,255,.05) 3px, transparent 3px);
+  background-size:48px 48px;
+}
+.wrap{max-width:1080px;margin:0 auto}
+header .eyebrow{
+  font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--azafran);font-weight:700;margin-bottom:8px;
+}
+header h1{
+  font-family:"Fraunces",serif;font-weight:900;
+  font-size:clamp(28px,5vw,46px);line-height:1.08;
+}
+header p.sub{margin-top:10px;color:#CBDCEE;max-width:640px;font-size:15px}
+/* la ruta como billetes de tren */
+.ruta{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;align-items:center;
+}
+.parada{
+  background:rgba(255,255,255,.1);
+  border:1px dashed rgba(255,255,255,.4);
+  border-radius:999px;
+  padding:5px 14px;font-size:13px;font-weight:600;color:#fff;
+  white-space:nowrap;
+}
+.parada small{color:var(--azafran);font-weight:700;margin-right:6px}
+.flecha{color:var(--azafran);font-weight:700}
+/* ---------- barra de acciones ---------- */
+.acciones{
+  display:flex;flex-wrap:wrap;gap:10px;
+  padding:16px 20px;max-width:1080px;margin:0 auto;
+}
+button,.btn{
+  font-family:inherit;font-size:14px;font-weight:600;
+  border:none;border-radius:999px;padding:10px 18px;cursor:pointer;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+button:focus-visible{outline:3px solid var(--azafran);outline-offset:2px}
+button:active{transform:translateY(1px)}
+.btn-primario{background:var(--azulejo);color:#fff}
+.btn-secundario{background:#fff;color:var(--azulejo);border:1.5px solid var(--azulejo)}
+.btn-peligro{background:#fff;color:#A33;border:1.5px solid #C88}
+/* ---------- pestañas ---------- */
+nav.tabs{
+  display:flex;gap:6px;max-width:1080px;margin:6px auto 0;padding:0 20px;
+  overflow-x:auto;
+}
+.tab{
+  background:transparent;color:var(--tinta-suave);
+  border-radius:12px 12px 0 0;padding:12px 20px;font-size:15px;font-weight:700;
+  border-bottom:3px solid transparent;white-space:nowrap;
+}
+.tab[aria-selected="true"]{color:var(--azulejo);border-bottom-color:var(--azafran);background:#fff}
+/* ---------- secciones ---------- */
+main{max-width:1080px;margin:0 auto;padding:20px}
+section{display:none;animation:apar .25s ease}
+section.activa{display:block}
+@keyframes apar{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){section{animation:none}}
+.nota-uso{
+  background:var(--editable);border:1px solid #EAD9A8;border-radius:var(--radius);
+  padding:12px 16px;font-size:14px;color:#6B5A20;margin-bottom:18px;
+}
+/* ---------- tarjetas de día ---------- */
+.dia{
+  background:var(--tarjeta);border:1px solid var(--linea);border-radius:var(--radius);
+  padding:16px 18px;margin-bottom:14px;
+  display:grid;grid-template-columns:64px 1fr;gap:14px;
+}
+.dia .num{
+  font-family:"Fraunces",serif;font-weight:900;font-size:26px;color:var(--azulejo);
+  border-right:2px dashed var(--linea);padding-right:12px;text-align:center;
+}
+.dia .num span{display:block;font-size:11px;font-family:"Public Sans";font-weight:700;
+  letter-spacing:.12em;color:var(--tinta-suave)}
+.dia h3{font-size:17px;font-weight:700;color:var(--azulejo)}
+.dia h3 .ciudad-tag{
+  display:inline-block;background:var(--teja);color:#fff;font-size:11px;font-weight:700;
+  letter-spacing:.06em;border-radius:6px;padding:2px 8px;vertical-align:middle;margin-left:8px;
+}
+.dia p.plan{font-size:14.5px;color:var(--tinta);margin:6px 0 4px}
+.dia p.transp{font-size:13px;color:var(--tinta-suave)}
+.campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:10px}
+.campo label{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tinta-suave);margin-bottom:3px}
+input,select,textarea{
+  font-family:inherit;font-size:14px;color:var(--tinta);
+  width:100%;border:1px solid #E0D6BC;border-radius:8px;
+  background:var(--editable);padding:8px 10px;
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--azafran);border-color:var(--azafran)}
+input[type=number]{text-align:right}
+/* ---------- reservas ---------- */
+.reserva{
+  background:var(--tarjeta);border:1px solid var(--linea);border-radius:var(--radius);
+  padding:16px 18px;margin-bottom:14px;
+}
+.reserva.critica{background:var(--critico);border-color:#EBC3A4}
+.reserva.hecha{background:var(--ok);border-color:#BBD8BB}
+.reserva .cab{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.reserva h3{font-size:16px;font-weight:700;color:var(--azulejo)}
+.reserva .urgente{
+  font-size:11px;font-weight:800;letter-spacing:.08em;color:#A34E00;
+  background:#fff;border-radius:6px;padding:3px 8px;border:1px solid #EBC3A4;
+}
+.reserva p.cuando{font-size:13.5px;margin-top:6px}
+.reserva p.donde{font-size:13px;color:var(--tinta-suave);margin-top:2px}
+.reserva p.donde a{color:var(--teja);font-weight:600}
+/* ---------- presupuesto ---------- */
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius);overflow:hidden;border:1px solid var(--linea)}
+th{background:var(--azulejo);color:#fff;font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  text-align:left;padding:10px 12px}
+td{padding:10px 12px;border-top:1px solid var(--linea);font-size:14px;vertical-align:top}
+td.detalle{font-size:12.5px;color:var(--tinta-suave)}
+td input{max-width:120px}
+tr.total td{font-weight:800;background:var(--ok);font-size:15px}
+.num-cell{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+/* ---------- barra total fija ---------- */
+.barra-total{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:var(--tinta);color:#fff;
+  padding:12px 20px;
+  box-shadow:0 -4px 16px rgba(0,0,0,.18);
+}
+.barra-total .wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.barra-total .kpi{display:flex;flex-direction:column}
+.barra-total .kpi small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#B9C4CE}
+.barra-total .kpi strong{font-family:"Fraunces",serif;font-size:22px;font-weight:700;color:var(--azafran)}
+.barra-total .kpi.real strong{color:#8FD6A0}
+#aviso{
+  position:fixed;bottom:96px;left:50%;transform:translateX(-50%);
+  background:var(--teja);color:#fff;padding:10px 20px;border-radius:999px;
+  font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s;
+  z-index:30;max-width:90vw;text-align:center;
+}
+#aviso.ver{opacity:1}
+@media (max-width:640px){
+  .dia{grid-template-columns:1fr}
+  .dia .num{border-right:none;border-bottom:2px dashed var(--linea);padding:0 0 8px;text-align:left}
+  .barra-total .kpi strong{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Septiembre 2026 · 18 días · billete circular</div>
+    <h1>El tour de mamá</h1>
+    <p class="sub">Madrid, el sur de España, Lisboa y Roma — sin conducir nada. Llenen los campos amarillos entre los dos: todo se guarda solo y los totales se calculan abajo.</p>
+    <div class="ruta" aria-label="Ruta del viaje">
+      <span class="parada"><small>1–3</small>Madrid</span><span class="flecha">→</span>
+      <span class="parada"><small>4</small>Córdoba</span><span class="flecha">→</span>
+      <span class="parada"><small>4–6</small>Sevilla</span><span class="flecha">→</span>
+      <span class="parada"><small>7–9</small>Granada</span><span class="flecha">→</span>
+      <span class="parada"><small>9–12</small>Lisboa</span><span class="flecha">→</span>
+      <span class="parada"><small>13–16</small>Roma</span><span class="flecha">→</span>
+      <span class="parada"><small>17–18</small>Madrid</span>
+    </div>
+  </div>
+</header>
+
+<div class="acciones">
+  <button class="btn-primario" id="btnCompartir">🔗 Compartir enlace con mis cambios</button>
+  <button class="btn-secundario" id="btnExportar">⬇ Guardar copia (JSON)</button>
+  <button class="btn-secundario" id="btnImportar">⬆ Cargar copia</button>
+  <input type="file" id="archivoImport" accept=".json" hidden>
+  <button class="btn-peligro" id="btnReset">Vaciar todo</button>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" aria-selected="true" data-tab="itinerario">📅 Itinerario</button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="reservas">🎟 Reservas</button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="presupuesto">💶 Presupuesto</button>
+</nav>
+
+<main>
+  <section id="sec-itinerario" class="activa">
+    <div class="nota-uso">Los campos amarillos son suyos: fecha, alojamiento, notas y el coste real de transporte del día. El total de transporte se suma solo en la barra de abajo.</div>
+    <div id="listaDias"></div>
+  </section>
+
+  <section id="sec-reservas">
+    <div class="nota-uso">Ordenadas por urgencia. Las naranjas son <strong>críticas</strong>: se agotan. Cuando marquen una como «Reservado» o «Pagado» se pondrá verde. El precio también es editable — pongan el real cuando compren.</div>
+    <div id="listaReservas"></div>
+  </section>
+
+  <section id="sec-presupuesto">
+    <div class="nota-uso">La columna «Estimado» ya trae cifras de referencia por persona (editables). Vayan llenando «Real» con lo que de verdad gasten: la tabla y la barra de abajo se actualizan solas.</div>
+    <table>
+      <thead><tr><th>Categoría</th><th>Detalle</th><th class="num-cell">€ Estimado (pp)</th><th class="num-cell">€ Real (pp)</th><th>Notas</th></tr></thead>
+      <tbody id="cuerpoPresupuesto"></tbody>
+      <tfoot>
+        <tr class="total"><td>TOTAL por persona</td><td></td>
+          <td class="num-cell" id="totEst">—</td><td class="num-cell" id="totReal">—</td><td></td></tr>
+        <tr class="total"><td>Total sin el vuelo internacional</td><td class="detalle">Por si mamá ya tiene su pasaje</td>
+          <td class="num-cell" id="totEstSinVuelo">—</td><td class="num-cell" id="totRealSinVuelo">—</td><td></td></tr>
+      </tfoot>
+    </table>
+  </section>
+</main>
+
+<div class="barra-total">
+  <div class="wrap">
+    <div class="kpi"><small>Transporte llenado (itinerario)</small><strong id="kpiTransporte">0 €</strong></div>
+    <div class="kpi"><small>Reservas (precios actuales)</small><strong id="kpiReservas">0 €</strong></div>
+    <div class="kpi"><small>Presupuesto estimado pp</small><strong id="kpiEst">0 €</strong></div>
+    <div class="kpi real"><small>Gastado real pp</small><strong id="kpiReal">0 €</strong></div>
+  </div>
+</div>
+
+<div id="aviso" role="status"></div>
+
+<script>
+/* ============ DATOS FIJOS DEL VIAJE ============ */
+const DIAS = [
+ {c:"Madrid", plan:"Llegada de mamá. Día suave: Retiro, Gran Vía, Plaza Mayor, chocolate con churros en San Ginés.", t:"Metro / a pie"},
+ {c:"Madrid", plan:"Museo del Prado por la mañana + Palacio Real y Almudena por la tarde. Atardecer en el Templo de Debod.", t:"Metro / a pie"},
+ {c:"Toledo", plan:"Excursión de día: Catedral, judería, Alcázar, mirador del Valle. Se duerme en Madrid.", t:"Tren AVANT Madrid–Toledo i/v (33 min)"},
+ {c:"Córdoba → Sevilla", plan:"AVE temprano a Córdoba (1h45). Mezquita-Catedral, judería y Puente Romano. Tarde: tren a Sevilla (45 min).", t:"AVE/Ouigo MAD–COR + MD COR–SEV"},
+ {c:"Sevilla", plan:"Catedral + subida a la Giralda, Barrio Santa Cruz, paseo junto al Guadalquivir. Noche de flamenco (opcional).", t:"A pie"},
+ {c:"Sevilla", plan:"Real Alcázar (con reserva) por la mañana; Plaza de España y Parque de María Luisa. Tarde en Triana.", t:"A pie"},
+ {c:"Sevilla → Granada", plan:"Tren a Granada (~2h40). Tarde: Albaicín y mirador de San Nicolás al atardecer, con la Alhambra de fondo.", t:"Tren SEV–GRX"},
+ {c:"Granada", plan:"ALHAMBRA: Palacios Nazaríes + Generalife + Alcazaba (mínimo 3 horas, según la hora del pase). Capilla Real por la tarde.", t:"Bus C30/C32 a la Alhambra"},
+ {c:"Granada → Lisboa", plan:"Mañana libre (Sacromonte o teterías). Tren a Sevilla + vuelo Sevilla–Lisboa (1h10).", t:"Tren GRX–SEV + vuelo SVQ–LIS"},
+ {c:"Lisboa", plan:"Alfama, Castillo de San Jorge, tranvía 28, mirador de Portas do Sol. Fado por la noche (opcional).", t:"Tranvía / metro"},
+ {c:"Lisboa", plan:"Belém: Monasterio de los Jerónimos, Torre de Belém y los pasteles originales. Tarde: Chiado y Bairro Alto.", t:"Tranvía 15"},
+ {c:"Sintra", plan:"Excursión de día: Palacio da Pena (con reserva) + Quinta da Regaleira. Se vuelve a Lisboa.", t:"Tren Rossio–Sintra i/v + bus 434"},
+ {c:"Lisboa → Roma", plan:"Vuelo a Roma (~3h). Tarde-noche: Fontana di Trevi, Panteón y Piazza Navona iluminadas.", t:"Vuelo LIS–FCO + Leonardo Express"},
+ {c:"Roma", plan:"Coliseo + Foro Romano + Palatino (reservado con antelación). Tarde: barrio Monti y Capitolio.", t:"Metro / a pie"},
+ {c:"Roma", plan:"Vaticano: Museos Vaticanos y Capilla Sixtina por la mañana; Basílica de San Pedro por la tarde.", t:"Metro"},
+ {c:"Roma", plan:"Día tranquilo: Trastevere, Campo de' Fiori, o Galería Borghese (reserva obligatoria).", t:"A pie"},
+ {c:"Roma → Madrid", plan:"Vuelo de regreso (~2h30). Tarde libre y descanso.", t:"Vuelo FCO–MAD"},
+ {c:"Madrid", plan:"Último día: compras, Malasaña o La Latina, y cena de despedida.", t:"Metro"},
+];
+
+const RESERVAS = [
+ {n:"Alhambra — Entrada General", cuando:"¡YA MISMO! La venta abre 3 meses antes y en septiembre se agota con meses de antelación. Se compra con el número de pasaporte de cada visitante y hay que llevar el pasaporte original ese día.", url:"https://tickets.alhambra-patronato.es", precio:22.27, critica:true},
+ {n:"Vuelos internos: Sevilla–Lisboa · Lisboa–Roma · Roma–Madrid", cuando:"1–2 meses antes; los precios suben mucho la última semana. TAP, Vueling, Ryanair, easyJet.", url:"https://www.google.com/travel/flights", precio:250, critica:true},
+ {n:"Coliseo + Foro Romano + Palatino", cuando:"Las entradas oficiales se liberan 30 días antes y se agotan en horas. Pongan una alarma ese día.", url:"https://colosseo.it", precio:24, critica:true},
+ {n:"Museos Vaticanos + Capilla Sixtina", cuando:"3–4 semanas antes. Eviten el último domingo del mes (gratis, pero colas enormes).", url:"https://www.museivaticani.va", precio:25, critica:true},
+ {n:"Trenes en España (Madrid–Córdoba–Sevilla, Sevilla–Granada i/v)", cuando:"1–2 meses antes para las tarifas baratas. Comparar Renfe/AVLO, Ouigo e iryo.", url:"https://www.renfe.com", precio:100, critica:false},
+ {n:"Real Alcázar de Sevilla", cuando:"2–4 semanas antes; los cupos por hora se agotan en temporada alta.", url:"https://realalcazarsevilla.sacatuentrada.es", precio:15.5, critica:false},
+ {n:"Palacio da Pena (Sintra)", cuando:"1–2 semanas antes; mejor la primera franja de la mañana.", url:"https://www.parquesdesintra.pt", precio:20, critica:false},
+ {n:"Catedral de Sevilla + Giralda", cuando:"Con una semana basta; online se salta la cola.", url:"https://www.catedraldesevilla.es", precio:13, critica:false},
+ {n:"Mezquita-Catedral de Córdoba", cuando:"Se suele conseguir el mismo día, pero online evita colas.", url:"https://mezquita-catedraldecordoba.es", precio:13, critica:false},
+ {n:"Galería Borghese (Roma, opcional)", cuando:"Reserva obligatoria siempre; 2–3 semanas antes.", url:"https://galleriaborghese.beniculturali.it", precio:15, critica:false},
+ {n:"Alojamientos: Sevilla (3 noches) · Granada (2) · Lisboa (4) · Roma (4)", cuando:"1–2 meses antes; septiembre es temporada alta en Andalucía y Roma.", url:"https://www.booking.com", precio:585, critica:false},
+ {n:"Flamenco en Sevilla (opcional)", cuando:"Con unos días de antelación.", url:"", precio:25, critica:false},
+ {n:"Fado en Lisboa (opcional)", cuando:"Con unos días de antelación.", url:"", precio:30, critica:false},
+];
+
+const PRESUPUESTO = [
+ {cat:"Vuelo internacional de mamá", det:"Quito–Madrid ida y vuelta (referencia; varía mucho)", est:1100, esVuelo:true},
+ {cat:"Trenes en España", det:"Toledo i/v, Madrid–Córdoba, Córdoba–Sevilla, Sevilla–Granada i/v", est:120},
+ {cat:"Vuelos internos", det:"Sevilla–Lisboa + Lisboa–Roma + Roma–Madrid", est:250},
+ {cat:"Entradas a monumentos", det:"Alhambra, Alcázar, catedrales, Mezquita, Pena, Coliseo, Vaticano", est:155},
+ {cat:"Alojamiento fuera de Madrid", det:"13 noches ≈ 90 €/noche la doble ÷ 2 personas", est:585},
+ {cat:"Comida", det:"≈ 40 €/día por persona × 18 días", est:720},
+ {cat:"Transporte urbano", det:"Metro, tranvías, buses, Leonardo Express en Roma", est:80},
+ {cat:"Extras", det:"Flamenco, fado, souvenirs, imprevistos", est:150},
+];
+
+/* ============ ESTADO ============ */
+const CLAVE = "tourMama2026";
+function estadoVacio(){
+  return {
+    dias: DIAS.map(()=>({fecha:"",aloj:"",notas:"",transp:""})),
+    res: RESERVAS.map(r=>({estado:"Pendiente",fechaRes:"",conf:"",precio:r.precio})),
+    pres: PRESUPUESTO.map(p=>({est:p.est,real:"",notas:""}))
+  };
+}
+let S = estadoVacio();
+
+function guardar(){
+  try{ localStorage.setItem(CLAVE, JSON.stringify(S)); }catch(e){ /* vista previa sin storage */ }
+}
+function cargarLocal(){
+  try{
+    const raw = localStorage.getItem(CLAVE);
+    if(raw){ fusionar(JSON.parse(raw)); return true; }
+  }catch(e){}
+  return false;
+}
+function fusionar(obj){
+  const base = estadoVacio();
+  if(obj && obj.dias) obj.dias.forEach((d,i)=>{ if(base.dias[i]) Object.assign(base.dias[i], d); });
+  if(obj && obj.res)  obj.res.forEach((r,i)=>{ if(base.res[i]) Object.assign(base.res[i], r); });
+  if(obj && obj.pres) obj.pres.forEach((p,i)=>{ if(base.pres[i]) Object.assign(base.pres[i], p); });
+  S = base;
+}
+
+/* estado desde la URL (enlace compartido) */
+function cargarDeURL(){
+  const h = location.hash;
+  if(h.startsWith("#d=")){
+    try{
+      const json = decodeURIComponent(escape(atob(h.slice(3))));
+      fusionar(JSON.parse(json));
+      guardar();
+      history.replaceState(null,"",location.pathname);
+      avisar("Se cargaron los datos del enlace compartido ✔");
+      return true;
+    }catch(e){ avisar("El enlace no se pudo leer"); }
+  }
+  return false;
+}
+
+/* ============ RENDER ============ */
+const eur = v => (isFinite(v)&&v!=="")? Number(v).toLocaleString("es-ES",{maximumFractionDigits:2})+" €" : "—";
+
+function renderDias(){
+  const cont = document.getElementById("listaDias");
+  cont.innerHTML = "";
+  DIAS.forEach((d,i)=>{
+    const s = S.dias[i];
+    const el = document.createElement("article");
+    el.className = "dia";
+    el.innerHTML = `
+      <div class="num"><span>Día</span>${i+1}</div>
+      <div>
+        <h3>${d.c}</h3>
+        <p class="plan">${d.plan}</p>
+        <p class="transp">🚆 ${d.t}</p>
+        <div class="campos">
+          <div class="campo"><label for="f${i}">Fecha</label>
+            <input id="f${i}" type="date" value="${s.fecha}" data-k="dias.${i}.fecha"></div>
+          <div class="campo"><label for="a${i}">Alojamiento</label>
+            <input id="a${i}" type="text" placeholder="Hotel / Airbnb" value="${s.aloj.replace(/"/g,'&quot;')}" data-k="dias.${i}.aloj"></div>
+          <div class="campo"><label for="t${i}">€ transporte del día (pp)</label>
+            <input id="t${i}" type="number" min="0" step="0.5" placeholder="0" value="${s.transp}" data-k="dias.${i}.transp"></div>
+          <div class="campo"><label for="n${i}">Notas</label>
+            <input id="n${i}" type="text" placeholder="Reservado ✔, ideas…" value="${s.notas.replace(/"/g,'&quot;')}" data-k="dias.${i}.notas"></div>
+        </div>
+      </div>`;
+    cont.appendChild(el);
+  });
+}
+
+function renderReservas(){
+  const cont = document.getElementById("listaReservas");
+  cont.innerHTML = "";
+  RESERVAS.forEach((r,i)=>{
+    const s = S.res[i];
+    const hecha = s.estado==="Reservado"||s.estado==="Pagado";
+    const el = document.createElement("article");
+    el.className = "reserva"+(hecha?" hecha":(r.critica?" critica":""));
+    el.innerHTML = `
+      <div class="cab">
+        <h3>${i+1}. ${r.n}</h3>
+        ${r.critica&&!hecha? '<span class="urgente">SE AGOTA</span>':''}
+      </div>
+      <p class="cuando">${r.cuando}</p>
+      ${r.url? `<p class="donde">Web oficial: <a href="${r.url}" target="_blank" rel="noopener">${r.url.replace("https://","")}</a></p>`:""}
+      <div class="campos">
+        <div class="campo"><label for="re${i}">Estado</label>
+          <select id="re${i}" data-k="res.${i}.estado">
+            ${["Pendiente","Reservado","Pagado"].map(o=>`<option ${o===s.estado?"selected":""}>${o}</option>`).join("")}
+          </select></div>
+        <div class="campo"><label for="rp${i}">€ por persona</label>
+          <input id="rp${i}" type="number" min="0" step="0.01" value="${s.precio}" data-k="res.${i}.precio"></div>
+        <div class="campo"><label for="rf${i}">Fecha / hora reservada</label>
+          <input id="rf${i}" type="text" placeholder="ej. 16/09 · 09:30" value="${s.fechaRes.replace(/"/g,'&quot;')}" data-k="res.${i}.fechaRes"></div>
+        <div class="campo"><label for="rc${i}">Nº de confirmación</label>
+          <input id="rc${i}" type="text" placeholder="ABC123" value="${s.conf.replace(/"/g,'&quot;')}" data-k="res.${i}.conf"></div>
+      </div>`;
+    cont.appendChild(el);
+  });
+}
+
+function renderPresupuesto(){
+  const body = document.getElementById("cuerpoPresupuesto");
+  body.innerHTML = "";
+  PRESUPUESTO.forEach((p,i)=>{
+    const s = S.pres[i];
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${p.cat}</strong></td>
+      <td class="detalle">${p.det}</td>
+      <td class="num-cell"><input type="number" min="0" step="1" value="${s.est}" data-k="pres.${i}.est" aria-label="Estimado ${p.cat}"></td>
+      <td class="num-cell"><input type="number" min="0" step="1" placeholder="—" value="${s.real}" data-k="pres.${i}.real" aria-label="Real ${p.cat}"></td>
+      <td><input type="text" value="${(s.notas||"").replace(/"/g,'&quot;')}" data-k="pres.${i}.notas" aria-label="Notas ${p.cat}"></td>`;
+    body.appendChild(tr);
+  });
+}
+
+/* ============ TOTALES ============ */
+function num(v){ const n = parseFloat(v); return isFinite(n)? n : 0; }
+function calcular(){
+  const transp = S.dias.reduce((a,d)=>a+num(d.transp),0);
+  const resTot = S.res.reduce((a,r)=>a+num(r.precio),0);
+  const est = S.pres.reduce((a,p)=>a+num(p.est),0);
+  const real = S.pres.reduce((a,p)=>a+num(p.real),0);
+  const estSV = S.pres.reduce((a,p,i)=>a+(PRESUPUESTO[i].esVuelo?0:num(p.est)),0);
+  const realSV = S.pres.reduce((a,p,i)=>a+(PRESUPUESTO[i].esVuelo?0:num(p.real)),0);
+  document.getElementById("kpiTransporte").textContent = eur(transp);
+  document.getElementById("kpiReservas").textContent = eur(resTot);
+  document.getElementById("kpiEst").textContent = eur(est);
+  document.getElementById("kpiReal").textContent = eur(real);
+  document.getElementById("totEst").textContent = eur(est);
+  document.getElementById("totReal").textContent = real? eur(real):"—";
+  document.getElementById("totEstSinVuelo").textContent = eur(estSV);
+  document.getElementById("totRealSinVuelo").textContent = realSV? eur(realSV):"—";
+}
+
+/* ============ EVENTOS ============ */
+document.addEventListener("input", e=>{
+  const k = e.target.dataset.k;
+  if(!k) return;
+  const [grupo, idx, campo] = k.split(".");
+  S[grupo][Number(idx)][campo] = e.target.value;
+  if(grupo==="res" && campo==="estado"){
+    const card = e.target.closest(".reserva");
+    const hecha = e.target.value!=="Pendiente";
+    card.classList.toggle("hecha", hecha);
+    card.classList.toggle("critica", !hecha && RESERVAS[Number(idx)].critica);
+    const tag = card.querySelector(".urgente");
+    if(tag) tag.style.display = hecha? "none":"";
+  }
+  guardar();
+  calcular();
+});
+
+/* pestañas */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected","false"));
+    t.setAttribute("aria-selected","true");
+    document.querySelectorAll("main section").forEach(s=>s.classList.remove("activa"));
+    document.getElementById("sec-"+t.dataset.tab).classList.add("activa");
+  });
+});
+
+/* compartir por enlace */
+document.getElementById("btnCompartir").addEventListener("click", async ()=>{
+  const datos = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+  const url = location.origin + location.pathname + "#d=" + datos;
+  try{
+    await navigator.clipboard.writeText(url);
+    avisar("Enlace copiado ✔ Envíaselo a mamá por WhatsApp");
+  }catch(e){
+    prompt("Copia este enlace y envíalo:", url);
+  }
+});
+
+/* exportar / importar */
+document.getElementById("btnExportar").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "tour-mama-2026.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  avisar("Copia guardada ✔");
+});
+document.getElementById("btnImportar").addEventListener("click", ()=>document.getElementById("archivoImport").click());
+document.getElementById("archivoImport").addEventListener("change", e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const lector = new FileReader();
+  lector.onload = ()=>{
+    try{
+      fusionar(JSON.parse(lector.result));
+      guardar(); renderTodo();
+      avisar("Copia cargada ✔");
+    }catch(err){ avisar("Ese archivo no se pudo leer"); }
+  };
+  lector.readAsText(f);
+  e.target.value = "";
+});
+
+/* reset */
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if(confirm("¿Seguro? Se borran todas las fechas, estados y valores llenados en este navegador.")){
+    S = estadoVacio();
+    guardar(); renderTodo();
+    avisar("Planificador vaciado");
+  }
+});
+
+function avisar(msg){
+  const a = document.getElementById("aviso");
+  a.textContent = msg;
+  a.classList.add("ver");
+  clearTimeout(a._t);
+  a._t = setTimeout(()=>a.classList.remove("ver"), 3200);
+}
+
+function renderTodo(){ renderDias(); renderReservas(); renderPresupuesto(); calcular(); }
+
+/* ============ ARRANQUE ============ */
+if(!cargarDeURL()) cargarLocal();
+renderTodo();
+</script>
+</body>
+</html>
