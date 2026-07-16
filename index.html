@@ -131,9 +131,9 @@ td .mini.borrar{margin-top:2px}
 
 <header>
   <div class="wrap">
-    <div class="eyebrow">Septiembre 2026 · billete circular · <span id="cuentaDias">18 días</span></div>
+    <div class="eyebrow">Septiembre 2026 · billete circular · <span id="cuentaDias">25 días</span></div>
     <h1>El tour de mamá</h1>
-    <p class="sub">Madrid, el sur de España, Lisboa y Roma — y lo que quieran añadir: Oporto, Cádiz, donde sea. Los campos amarillos se llenan; los blancos (ciudad y plan) también se pueden cambiar. Todo se guarda solo.</p>
+    <p class="sub">Madrid con calma (+ Toledo y Segovia), Andalucía, Lisboa, Roma y Barcelona — 25 días sin apuros. Los campos amarillos se llenan; los blancos (ciudad y plan) también se pueden cambiar. Todo se guarda solo.</p>
     <div class="ruta" id="rutaChips" aria-label="Ruta del viaje"></div>
   </div>
 </header>
@@ -154,7 +154,7 @@ td .mini.borrar{margin-top:2px}
 
 <main>
   <section id="sec-itinerario" class="activa">
-    <div class="nota-uso">¿Se animan con Oporto o Cádiz? Usen <strong>＋ Añadir día</strong> y muévanlo a su sitio con las flechas ↑ ↓. Los días se renumeran solos y la ruta de arriba se actualiza. La ✕ borra un día.</div>
+    <div class="nota-uso">Si quieren cambiar algo, usen <strong>＋ Añadir día</strong> y muévanlo a su sitio con las flechas ↑ ↓. Los días se renumeran solos y la ruta de arriba se actualiza. La ✕ borra un día.</div>
     <button class="btn-anadir" id="btnAnadirDia">＋ Añadir día</button>
     <div id="listaDias"></div>
   </section>
@@ -195,50 +195,59 @@ td .mini.borrar{margin-top:2px}
 <script>
 /* ============ PLAN ORIGINAL (semillas) ============ */
 const SEED_DIAS = [
- {c:"Madrid", plan:"Llegada de mamá. Día suave: Retiro, Gran Vía, Plaza Mayor, chocolate con churros en San Ginés.", t:"Metro / a pie"},
- {c:"Madrid", plan:"Museo del Prado por la mañana + Palacio Real y Almudena por la tarde. Atardecer en el Templo de Debod.", t:"Metro / a pie"},
- {c:"Toledo", plan:"Excursión de día: Catedral, judería, Alcázar, mirador del Valle. Se duerme en Madrid.", t:"Tren AVANT Madrid–Toledo i/v (33 min)"},
- {c:"Córdoba → Sevilla", plan:"AVE temprano a Córdoba (1h45). Mezquita-Catedral, judería y Puente Romano. Tarde: tren a Sevilla (45 min).", t:"AVE/Ouigo MAD–COR + MD COR–SEV"},
- {c:"Sevilla", plan:"Catedral + subida a la Giralda, Barrio Santa Cruz, paseo junto al Guadalquivir. Noche de flamenco (opcional).", t:"A pie"},
- {c:"Sevilla", plan:"Real Alcázar (con reserva) por la mañana; Plaza de España y Parque de María Luisa. Tarde en Triana.", t:"A pie"},
- {c:"Sevilla → Granada", plan:"Tren a Granada (~2h40). Tarde: Albaicín y mirador de San Nicolás al atardecer, con la Alhambra de fondo.", t:"Tren SEV–GRX"},
- {c:"Granada", plan:"ALHAMBRA: Palacios Nazaríes + Generalife + Alcazaba (mínimo 3 horas, según la hora del pase). Capilla Real por la tarde.", t:"Bus C30/C32 a la Alhambra"},
- {c:"Granada → Lisboa", plan:"Mañana libre (Sacromonte o teterías). Tren a Sevilla + vuelo Sevilla–Lisboa (1h10).", t:"Tren GRX–SEV + vuelo SVQ–LIS"},
- {c:"Lisboa", plan:"Alfama, Castillo de San Jorge, tranvía 28, mirador de Portas do Sol. Fado por la noche (opcional).", t:"Tranvía / metro"},
+ {c:"Madrid", plan:"Llegada de mamá. Día muy suave para el jet lag: paseo por el Retiro, Plaza Mayor, chocolate con churros en San Ginés y a dormir temprano.", t:"Metro / a pie"},
+ {c:"Madrid", plan:"Museo del Prado por la mañana (con calma) y siesta. Tarde: Gran Vía y atardecer en el Templo de Debod.", t:"Metro / a pie"},
+ {c:"Madrid", plan:"Palacio Real y Catedral de la Almudena. Tarde tranquila: La Latina, mercado de San Miguel.", t:"Metro / a pie"},
+ {c:"Toledo", plan:"Excursión de día: Catedral, judería, Alcázar y mirador del Valle. Se vuelve a dormir a Madrid.", t:"Tren AVANT Madrid–Toledo i/v (33 min)"},
+ {c:"Segovia", plan:"Excursión de día: acueducto romano, Alcázar (el castillo de cuento) y cochinillo de almuerzo. Se vuelve a Madrid.", t:"Tren AVE Chamartín–Segovia i/v (27 min)"},
+ {c:"Córdoba → Granada", plan:"AVE temprano a Córdoba (1h45). Maletas en consigna de la estación, Mezquita-Catedral y judería. Tarde: tren directo a Granada (1h30).", t:"AVE MAD–COR + Avant COR–GRX"},
+ {c:"Granada", plan:"ALHAMBRA: Palacios Nazaríes + Generalife + Alcazaba (mínimo 3 horas, según la hora del pase). Tarde: Capilla Real y centro.", t:"Bus C30/C32 a la Alhambra"},
+ {c:"Granada", plan:"Albaicín con calma, teterías de la calle Calderería, y atardecer en el mirador de San Nicolás con la Alhambra de fondo.", t:"A pie / bus C31"},
+ {c:"Granada → Sevilla", plan:"Tren a Sevilla (~2h40). Tarde: primer paseo por el centro, Catedral por fuera y orillas del Guadalquivir.", t:"Tren GRX–SEV"},
+ {c:"Sevilla", plan:"Real Alcázar (con reserva) por la mañana; Catedral + subida a la Giralda por la tarde. Noche: flamenco (opcional).", t:"A pie"},
+ {c:"Sevilla", plan:"Plaza de España y Parque de María Luisa por la mañana. Tarde en Triana: cerámica, mercado y tapeo.", t:"A pie"},
+ {c:"Cádiz", plan:"Excursión de día: casco antiguo, catedral con su torre de rampa, playa de la Caleta al atardecer. Se vuelve a dormir a Sevilla.", t:"Tren directo Sevilla–Cádiz i/v (1h40 por trayecto)"},
+ {c:"Sevilla → Lisboa", plan:"Mañana libre en Sevilla. Vuelo a Lisboa (1h10). Tarde: Praça do Comércio y primer paseo por la Baixa.", t:"Vuelo SVQ–LIS"},
+ {c:"Lisboa", plan:"Alfama, Castillo de San Jorge, tranvía 28 y miradores (Portas do Sol). Fado por la noche (opcional).", t:"Tranvía / metro"},
  {c:"Lisboa", plan:"Belém: Monasterio de los Jerónimos, Torre de Belém y los pasteles originales. Tarde: Chiado y Bairro Alto.", t:"Tranvía 15"},
  {c:"Sintra", plan:"Excursión de día: Palacio da Pena (con reserva) + Quinta da Regaleira. Se vuelve a Lisboa.", t:"Tren Rossio–Sintra i/v + bus 434"},
  {c:"Lisboa → Roma", plan:"Vuelo a Roma (~3h). Tarde-noche: Fontana di Trevi, Panteón y Piazza Navona iluminadas.", t:"Vuelo LIS–FCO + Leonardo Express"},
- {c:"Roma", plan:"Coliseo + Foro Romano + Palatino (reservado con antelación). Tarde: barrio Monti y Capitolio.", t:"Metro / a pie"},
+ {c:"Roma", plan:"Coliseo + Foro Romano + Palatino (reservado 30 días antes). Tarde: barrio Monti y Capitolio.", t:"Metro / a pie"},
  {c:"Roma", plan:"Vaticano: Museos Vaticanos y Capilla Sixtina por la mañana; Basílica de San Pedro por la tarde.", t:"Metro"},
  {c:"Roma", plan:"Día tranquilo: Trastevere, Campo de' Fiori, o Galería Borghese (reserva obligatoria).", t:"A pie"},
- {c:"Roma → Madrid", plan:"Vuelo de regreso (~2h30). Tarde libre y descanso.", t:"Vuelo FCO–MAD"},
- {c:"Madrid", plan:"Último día: compras, Malasaña o La Latina, y cena de despedida.", t:"Metro"},
+ {c:"Roma → Barcelona", plan:"Vuelo a Barcelona (1h50). Tarde: Barrio Gótico, Catedral y paseo por Las Ramblas.", t:"Vuelo FCO–BCN + Aerobús"},
+ {c:"Barcelona", plan:"Sagrada Família (con reserva) por la mañana. Tarde: Paseo de Gracia, Casa Batlló y La Pedrera por fuera.", t:"Metro"},
+ {c:"Barcelona", plan:"Park Güell (con reserva) por la mañana. Tarde: Barceloneta y paseo junto al mar.", t:"Metro / bus"},
+ {c:"Barcelona → Madrid", plan:"AVE de vuelta a Madrid (2h30). Tarde libre y descanso.", t:"AVE/Ouigo/iryo BCN–MAD"},
+ {c:"Madrid", plan:"Último día: compras, Malasaña, y cena de despedida. Mamá regresa a Ecuador.", t:"Metro"},
 ];
 
 const SEED_RES = [
  {n:"Alhambra — Entrada General", cuando:"¡YA MISMO! La venta abre 3 meses antes y en septiembre se agota con meses de antelación. Se compra con el número de pasaporte de cada visitante y hay que llevar el pasaporte original ese día.", url:"https://tickets.alhambra-patronato.es", precio:22.27, critica:true},
- {n:"Vuelos internos: Sevilla–Lisboa · Lisboa–Roma · Roma–Madrid", cuando:"1–2 meses antes; los precios suben mucho la última semana. TAP, Vueling, Ryanair, easyJet.", url:"https://www.google.com/travel/flights", precio:250, critica:true},
+ {n:"Sagrada Família (Barcelona)", cuando:"Junto con la Alhambra: se agota con semanas de antelación. La entrada con torres cuesta más (~36€) y vale la pena.", url:"https://sagradafamilia.org", precio:26, critica:true},
+ {n:"Vuelos internos: Sevilla–Lisboa · Lisboa–Roma · Roma–Barcelona", cuando:"1–2 meses antes; los precios suben mucho la última semana. TAP, Vueling, Ryanair, easyJet.", url:"https://www.google.com/travel/flights", precio:300, critica:true},
  {n:"Coliseo + Foro Romano + Palatino", cuando:"Las entradas oficiales se liberan 30 días antes y se agotan en horas. Pongan una alarma ese día.", url:"https://colosseo.it", precio:24, critica:true},
  {n:"Museos Vaticanos + Capilla Sixtina", cuando:"3–4 semanas antes. Eviten el último domingo del mes (gratis, pero colas enormes).", url:"https://www.museivaticani.va", precio:25, critica:true},
- {n:"Trenes en España (Madrid–Córdoba–Sevilla, Sevilla–Granada i/v)", cuando:"1–2 meses antes para las tarifas baratas. Comparar Renfe/AVLO, Ouigo e iryo.", url:"https://www.renfe.com", precio:100, critica:false},
+ {n:"Trenes en España (Toledo, Segovia, MAD–Córdoba, Córdoba–Granada, Granada–Sevilla, Cádiz i/v, Barcelona–Madrid)", cuando:"1–2 meses antes para las tarifas baratas. Comparar Renfe/AVLO, Ouigo e iryo (los AVANT de Toledo/Segovia son tarifa fija, sin apuro).", url:"https://www.renfe.com", precio:170, critica:false},
  {n:"Real Alcázar de Sevilla", cuando:"2–4 semanas antes; los cupos por hora se agotan en temporada alta.", url:"https://realalcazarsevilla.sacatuentrada.es", precio:15.5, critica:false},
+ {n:"Park Güell (Barcelona)", cuando:"1–2 semanas antes; franjas horarias limitadas.", url:"https://parkguell.barcelona", precio:10, critica:false},
  {n:"Palacio da Pena (Sintra)", cuando:"1–2 semanas antes; mejor la primera franja de la mañana.", url:"https://www.parquesdesintra.pt", precio:20, critica:false},
  {n:"Catedral de Sevilla + Giralda", cuando:"Con una semana basta; online se salta la cola.", url:"https://www.catedraldesevilla.es", precio:13, critica:false},
  {n:"Mezquita-Catedral de Córdoba", cuando:"Se suele conseguir el mismo día, pero online evita colas.", url:"https://mezquita-catedraldecordoba.es", precio:13, critica:false},
  {n:"Galería Borghese (Roma, opcional)", cuando:"Reserva obligatoria siempre; 2–3 semanas antes.", url:"https://galleriaborghese.beniculturali.it", precio:15, critica:false},
- {n:"Alojamientos: Sevilla (3 noches) · Granada (2) · Lisboa (4) · Roma (4)", cuando:"1–2 meses antes; septiembre es temporada alta en Andalucía y Roma.", url:"https://www.booking.com", precio:585, critica:false},
+ {n:"Alojamientos: Granada (3 noches) · Sevilla (4) · Lisboa (4) · Roma (4) · Barcelona (3)", cuando:"1–2 meses antes; septiembre es temporada alta en Andalucía, Roma y Barcelona.", url:"https://www.booking.com", precio:810, critica:false},
  {n:"Flamenco en Sevilla (opcional)", cuando:"Con unos días de antelación.", url:"", precio:25, critica:false},
  {n:"Fado en Lisboa (opcional)", cuando:"Con unos días de antelación.", url:"", precio:30, critica:false},
 ];
 
 const SEED_PRES = [
  {cat:"Vuelo internacional de mamá", det:"Quito–Madrid ida y vuelta (referencia; varía mucho)", est:1100, esVuelo:true},
- {cat:"Trenes en España", det:"Toledo i/v, Madrid–Córdoba, Córdoba–Sevilla, Sevilla–Granada i/v", est:120},
- {cat:"Vuelos internos", det:"Sevilla–Lisboa + Lisboa–Roma + Roma–Madrid", est:250},
- {cat:"Entradas a monumentos", det:"Alhambra, Alcázar, catedrales, Mezquita, Pena, Coliseo, Vaticano", est:155},
- {cat:"Alojamiento fuera de Madrid", det:"13 noches ≈ 90 €/noche la doble ÷ 2 personas", est:585},
- {cat:"Comida", det:"≈ 40 €/día por persona × 18 días", est:720},
- {cat:"Transporte urbano", det:"Metro, tranvías, buses, Leonardo Express en Roma", est:80},
+ {cat:"Trenes en España", det:"Toledo i/v, Segovia i/v, Madrid–Córdoba, Córdoba–Granada, Granada–Sevilla, Cádiz i/v, Barcelona–Madrid", est:170},
+ {cat:"Vuelos internos", det:"Sevilla–Lisboa + Lisboa–Roma + Roma–Barcelona", est:300},
+ {cat:"Entradas a monumentos", det:"Alhambra, Alcázar, catedrales, Mezquita, Pena, Coliseo, Vaticano, Sagrada Família, Park Güell", est:195},
+ {cat:"Alojamiento fuera de Madrid", det:"18 noches (Granada 3, Sevilla 4, Lisboa 4, Roma 4, Barcelona 3) ≈ 90 €/noche la doble ÷ 2 personas", est:810},
+ {cat:"Comida", det:"≈ 40 €/día por persona × 25 días", est:1000},
+ {cat:"Transporte urbano", det:"Metro, tranvías, buses, Leonardo Express y Aerobús", est:100},
  {cat:"Extras", det:"Flamenco, fado, souvenirs, imprevistos", est:150},
 ];
 
@@ -593,7 +602,7 @@ document.getElementById("archivoImport").addEventListener("change", e=>{
 
 /* restaurar plan original */
 document.getElementById("btnReset").addEventListener("click", ()=>{
-  if(confirm("¿Volver al plan original de 18 días? Se pierden los días añadidos y todo lo llenado en este navegador.")){
+  if(confirm("¿Volver al plan original de 25 días? Se pierden los días añadidos y todo lo llenado en este navegador.")){
     S = estadoVacio();
     guardar(); renderTodo();
     avisar("Plan original restaurado");
