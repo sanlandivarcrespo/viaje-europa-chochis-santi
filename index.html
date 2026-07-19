@@ -57,8 +57,10 @@ button:active{transform:translateY(1px)}
 .ajustes{max-width:1080px;margin:0 auto;padding:0 20px 4px}
 .wrap-aj{background:#fff;border:1px solid var(--linea);border-radius:var(--radius);padding:12px 16px;
   display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.aj-botones{display:flex;gap:8px;flex-wrap:wrap}
 .aj-aviso{font-size:13px;color:var(--tinta-suave);flex:1;min-width:240px;line-height:1.45}
-#selloFecha{display:block;font-size:11.5px;color:var(--teja);font-weight:600;margin-top:2px}
+#selloFecha{display:block;font-size:11.5px;color:var(--teja);font-weight:600;margin-top:4px}
+#selloVersion{display:block;font-size:11px;color:#9AA7B2;margin-top:1px}
 nav.tabs{display:flex;gap:6px;max-width:1080px;margin:6px auto 0;padding:0 20px;overflow-x:auto}
 .tab{background:transparent;color:var(--tinta-suave);border-radius:12px 12px 0 0;padding:12px 20px;
   font-size:15px;font-weight:700;border-bottom:3px solid transparent;white-space:nowrap}
@@ -166,9 +168,10 @@ td .mini.borrar{margin-top:2px}
 </header>
 
 <div class="acciones">
-  <button class="btn-primario" id="btnCompartir">🔗 Compartir enlace con mis cambios</button>
-  <button class="btn-secundario" id="btnExportar">⬇ Guardar copia (JSON)</button>
-  <button class="btn-secundario" id="btnImportar">⬆ Cargar copia</button>
+  <button class="btn-primario" id="btnPublicar">📤 Publicar en la web (subir a GitHub)</button>
+  <button class="btn-secundario" id="btnCompartir">🔗 Compartir enlace con mis cambios</button>
+  <button class="btn-secundario" id="btnArchivo">📄 Guardar copia</button>
+  <button class="btn-secundario" id="btnImportar">⬆ Abrir archivo recibido</button>
   <input type="file" id="archivoImport" accept=".json" hidden>
   <button class="btn-secundario" id="btnActualizarPlan">🔄 Traer textos del plan nuevo (sin borrar mis datos)</button>
   <button class="btn-peligro" id="btnReset">Restaurar plan original</button>
@@ -177,11 +180,13 @@ td .mini.borrar{margin-top:2px}
 <div class="ajustes">
   <div class="wrap-aj">
     <div class="aj-aviso">
-      📱 <strong>Los datos se guardan solo en este dispositivo.</strong> El móvil y el ordenador no se sincronizan solos:
-      para ver aquí lo que escribiste allá, usa el botón «Compartir enlace».
-      <span id="selloFecha"></span>
+      📤 <strong>Para que mamá y tu móvil vean tus cambios:</strong> dale a «Publicar», sube el <code>index.html</code>
+      descargado a GitHub, y listo — todos ven lo nuevo al abrir la página de siempre. No hay que enviar nada más.
+      <span id="selloFecha"></span><span id="selloVersion"></span>
     </div>
-    <button class="btn-primario" id="btnCompartir2">🔗 Compartir / enviar al móvil</button>
+    <div class="aj-botones">
+      <button class="btn-primario" id="btnPublicar2">📤 Publicar</button>
+    </div>
   </div>
 </div>
 
@@ -315,6 +320,10 @@ const SEED_PRES = [
 
 /* ============ ESTADO (v2: todo vive en el estado y es editable) ============ */
 const CLAVE = "tourMama2026";
+/*__DATOS_INICIO__*/
+const DATOS_PUBLICADOS = null;
+/*__DATOS_FIN__*/
+const VERSION = "v4.0 · 19 jul";
 
 function diaVacio(){ return {c:"Nueva ciudad", plan:"Describan aquí el plan del día…", t:"", fecha:"", aloj:"", notas:"", tr:"", en:"", co:"", ex:""}; }
 function resVacia(){ return {n:"Nueva reserva", cuando:"¿Cuándo hay que reservarla?", url:"", precio:"", critica:false, estado:"Pendiente", fechaRes:"", conf:"", custom:true}; }
@@ -338,6 +347,8 @@ function guardar(){
 }
 
 function pintarSello(){
+  const v = document.getElementById("selloVersion");
+  if(v) v.textContent = "app " + VERSION + " · " + S.dias.length + " días cargados";
   const el = document.getElementById("selloFecha");
   if(!el) return;
   if(!S.actualizado){ el.textContent = "sin cambios guardados"; return; }
@@ -369,12 +380,19 @@ function fusionar(obj){
   }
 }
 
-function cargarLocal(){
+function leerLocal(){
   try{
     const raw = localStorage.getItem(CLAVE);
-    if(raw){ fusionar(JSON.parse(raw)); return true; }
+    if(raw) return JSON.parse(raw);
   }catch(e){}
-  return false;
+  return null;
+}
+
+/* guarda sin actualizar la marca de tiempo (para datos que vienen publicados) */
+function guardarComoPublicado(sello){
+  S.actualizado = sello || null;
+  try{ localStorage.setItem(CLAVE, JSON.stringify(S)); }catch(e){}
+  pintarSello();
 }
 
 function cargarDeURL(){
@@ -676,10 +694,69 @@ document.querySelectorAll(".tab").forEach(t=>{
   });
 });
 
-/* compartir por enlace */
+/* Genera un index.html con los datos dentro, listo para subir a GitHub.
+   Al subirlo, cualquiera que abra la URL normal ve este contenido. */
+async function publicar(){
+  let fuente;
+  try{
+    const r = await fetch(location.pathname + "?v=" + Date.now(), {cache:"no-store"});
+    fuente = await r.text();
+  }catch(e){
+    alert("No se pudo leer la página. Prueba desde la web publicada en GitHub, no desde un archivo local.");
+    return;
+  }
+  const ini = fuente.indexOf("/*__DATOS_INICIO__*/");
+  const fin = fuente.indexOf("/*__DATOS_FIN__*/");
+  if(ini === -1 || fin === -1){
+    alert("Esta versión de la página no admite publicar. Sube primero el index.html nuevo.");
+    return;
+  }
+  const copia = JSON.parse(JSON.stringify(S));
+  copia.publicado = new Date().toISOString();
+  /* evitar que un texto rompa el <script> */
+  const json = JSON.stringify(copia).replace(/<\//g, "<\\/");
+  const bloque = "/*__DATOS_INICIO__*/\nconst DATOS_PUBLICADOS = " + json + ";\n/*__DATOS_FIN__*/";
+  const nuevo = fuente.slice(0, ini) + bloque + fuente.slice(fin + "/*__DATOS_FIN__*/".length);
+
+  const blob = new Blob([nuevo], {type:"text/html"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "index.html";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  avisar("index.html descargado ✔ Súbelo a GitHub y todos verán tus cambios");
+}
+
+/* compartir el archivo de datos: el método fiable para pasar entre dispositivos */
+async function compartirArchivo(){
+  const texto = JSON.stringify(S, null, 2);
+  const nombre = "viaje-mama.json";
+  const blob = new Blob([texto], {type:"application/json"});
+  const file = new File([blob], nombre, {type:"application/json"});
+
+  /* en el móvil: abre WhatsApp, correo, etc. y adjunta el archivo */
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({files:[file], title:"Viaje de mamá — datos"});
+      return;
+    }catch(e){ if(e && e.name === "AbortError") return; }
+  }
+  /* en el ordenador: lo descarga para que lo adjuntes tú */
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nombre;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  avisar("Archivo descargado ✔ Adjúntalo en WhatsApp como documento");
+}
+
+/* compartir por enlace (solo si los textos son cortos) */
 async function compartirEnlace(){
   const datos = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
   const url = location.origin + location.pathname + "#d=" + datos;
+  if(url.length > 8000){
+    if(!confirm("El enlace mide " + Math.round(url.length/1000) + " mil caracteres: WhatsApp probablemente lo corte y no funcione.\n\nRecomendado: usar «Enviar archivo» en su lugar.\n\n¿Generar el enlace de todos modos?")) return;
+  }
   /* en el móvil abre el menú nativo (WhatsApp, Notas, correo...) */
   if(navigator.share){
     try{
@@ -694,19 +771,12 @@ async function compartirEnlace(){
     prompt("Copia este enlace y ábrelo en el otro dispositivo:", url);
   }
 }
+document.getElementById("btnArchivo").addEventListener("click", compartirArchivo);
+document.getElementById("btnPublicar").addEventListener("click", publicar);
+document.getElementById("btnPublicar2").addEventListener("click", publicar);
 document.getElementById("btnCompartir").addEventListener("click", compartirEnlace);
-document.getElementById("btnCompartir2").addEventListener("click", compartirEnlace);
 
 /* exportar / importar */
-document.getElementById("btnExportar").addEventListener("click", ()=>{
-  const blob = new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "tour-mama-2026.json";
-  a.click();
-  URL.revokeObjectURL(a.href);
-  avisar("Copia guardada ✔");
-});
 document.getElementById("btnImportar").addEventListener("click", ()=>document.getElementById("archivoImport").click());
 document.getElementById("archivoImport").addEventListener("change", e=>{
   const f = e.target.files[0];
@@ -768,8 +838,28 @@ function avisar(msg){
 function renderTodo(){ renderDias(); renderReservas(); renderPresupuesto(); renderRuta(); calcular(); autoAltoTodos(); }
 
 /* ============ ARRANQUE ============ */
-if(!cargarDeURL()) cargarLocal();
-renderTodo();
+/* Prioridad: 1) enlace compartido  2) lo publicado en GitHub si es más nuevo
+   3) lo guardado en este dispositivo  4) el plan base                         */
+(function arrancar(){
+  if(cargarDeURL()){ renderTodo(); return; }
+
+  const local = leerLocal();
+  const pub = DATOS_PUBLICADOS;
+
+  if(pub && pub.publicado){
+    const localViejo = !local || !local.actualizado || local.actualizado < pub.publicado;
+    if(localViejo){
+      fusionar(pub);
+      guardarComoPublicado(pub.publicado);
+      renderTodo();
+      if(local) avisar("Se cargó la versión publicada más reciente ✔");
+      return;
+    }
+  }
+  if(local) fusionar(local);
+  else if(pub) fusionar(pub);
+  renderTodo();
+})();
 pintarSello();
 window.addEventListener("resize", ()=>{ clearTimeout(window._rz); window._rz = setTimeout(autoAltoTodos, 150); });
 </script>
