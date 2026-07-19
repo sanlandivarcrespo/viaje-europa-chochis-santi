@@ -84,7 +84,7 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--tinta);widt
   border:1px solid #E0D6BC;border-radius:8px;background:var(--editable);padding:8px 10px}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--azafran);border-color:var(--azafran)}
 input[type=number]{text-align:right}
-textarea{resize:vertical;min-height:52px}
+textarea{resize:vertical;min-height:52px;overflow:hidden;line-height:1.5}
 .contenido{background:var(--contenido);border-color:var(--linea)}
 input.ciudad{font-weight:700;color:var(--azulejo)}
 /* costes diarios */
@@ -367,6 +367,16 @@ const eur = v => (isFinite(v)&&v!=="")? Number(v).toLocaleString("es-ES",{maximu
 const esc = s => String(s==null? "":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
 function num(v){ const n = parseFloat(v); return isFinite(n)? n : 0; }
 
+/* hace que los textareas crezcan solos con el contenido, sin scroll interno */
+function autoAlto(el){
+  if(!el) return;
+  el.style.height = "auto";
+  el.style.height = (el.scrollHeight + 2) + "px";
+}
+function autoAltoTodos(){
+  document.querySelectorAll("textarea").forEach(autoAlto);
+}
+
 /* ============ RUTA DINÁMICA EN LA CABECERA ============ */
 function renderRuta(){
   const cont = document.getElementById("rutaChips");
@@ -420,8 +430,8 @@ function renderDias(){
             <input id="f${i}" type="date" value="${esc(d.fecha)}" data-k="dias.${i}.fecha"></div>
           <div class="campo"><label for="a${i}">Alojamiento</label>
             <input id="a${i}" type="text" placeholder="Hotel / Airbnb" value="${esc(d.aloj)}" data-k="dias.${i}.aloj"></div>
-          <div class="campo"><label for="n${i}">Notas</label>
-            <input id="n${i}" type="text" placeholder="Reservado ✔, ideas…" value="${esc(d.notas)}" data-k="dias.${i}.notas"></div>
+          <div class="campo ancho"><label for="n${i}">Notas</label>
+            <textarea id="n${i}" rows="1" placeholder="Horarios, reservas, direcciones, ideas…" data-k="dias.${i}.notas">${esc(d.notas)}</textarea></div>
         </div>
         <div class="costes">
           <div class="campo"><label for="ct${i}">🚆 Transporte</label>
@@ -437,6 +447,7 @@ function renderDias(){
       </div>`;
     cont.appendChild(el);
   });
+  autoAltoTodos();
 }
 
 /* ============ RENDER: RESERVAS ============ */
@@ -544,6 +555,7 @@ document.addEventListener("input", e=>{
   if(!k) return;
   const [grupo, idx, campo] = k.split(".");
   S[grupo][Number(idx)][campo] = e.target.value;
+  if(e.target.tagName === "TEXTAREA") autoAlto(e.target);
   if(grupo==="res" && campo==="estado"){
     const card = e.target.closest(".reserva");
     const r = S.res[Number(idx)];
@@ -714,11 +726,12 @@ function avisar(msg){
   a._t = setTimeout(()=>a.classList.remove("ver"), 3200);
 }
 
-function renderTodo(){ renderDias(); renderReservas(); renderPresupuesto(); renderRuta(); calcular(); }
+function renderTodo(){ renderDias(); renderReservas(); renderPresupuesto(); renderRuta(); calcular(); autoAltoTodos(); }
 
 /* ============ ARRANQUE ============ */
 if(!cargarDeURL()) cargarLocal();
 renderTodo();
+window.addEventListener("resize", ()=>{ clearTimeout(window._rz); window._rz = setTimeout(autoAltoTodos, 150); });
 </script>
 </body>
 </html>
