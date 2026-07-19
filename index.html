@@ -54,6 +54,11 @@ button:active{transform:translateY(1px)}
 .btn-secundario{background:#fff;color:var(--azulejo);border:1.5px solid var(--azulejo)}
 .btn-peligro{background:#fff;color:#A33;border:1.5px solid #C88}
 .btn-anadir{background:var(--teja);color:#fff;margin-bottom:16px}
+.ajustes{max-width:1080px;margin:0 auto;padding:0 20px 4px}
+.wrap-aj{background:#fff;border:1px solid var(--linea);border-radius:var(--radius);padding:12px 16px;
+  display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.aj-aviso{font-size:13px;color:var(--tinta-suave);flex:1;min-width:240px;line-height:1.45}
+#selloFecha{display:block;font-size:11.5px;color:var(--teja);font-weight:600;margin-top:2px}
 nav.tabs{display:flex;gap:6px;max-width:1080px;margin:6px auto 0;padding:0 20px;overflow-x:auto}
 .tab{background:transparent;color:var(--tinta-suave);border-radius:12px 12px 0 0;padding:12px 20px;
   font-size:15px;font-weight:700;border-bottom:3px solid transparent;white-space:nowrap}
@@ -169,6 +174,17 @@ td .mini.borrar{margin-top:2px}
   <button class="btn-peligro" id="btnReset">Restaurar plan original</button>
 </div>
 
+<div class="ajustes">
+  <div class="wrap-aj">
+    <div class="aj-aviso">
+      📱 <strong>Los datos se guardan solo en este dispositivo.</strong> El móvil y el ordenador no se sincronizan solos:
+      para ver aquí lo que escribiste allá, usa el botón «Compartir enlace».
+      <span id="selloFecha"></span>
+    </div>
+    <button class="btn-primario" id="btnCompartir2">🔗 Compartir / enviar al móvil</button>
+  </div>
+</div>
+
 <nav class="tabs" role="tablist">
   <button class="tab" role="tab" aria-selected="true" data-tab="itinerario">📅 Itinerario</button>
   <button class="tab" role="tab" aria-selected="false" data-tab="reservas">🎟 Reservas</button>
@@ -191,7 +207,7 @@ td .mini.borrar{margin-top:2px}
   <section id="sec-presupuesto">
     <div class="nota-uso">Todo lo que llenen en el Itinerario <strong>se suma automáticamente aquí abajo</strong>, desglosado por categoría. En la tabla de gastos globales solo van las cosas que no pertenecen a un día concreto, como el alojamiento. El vuelo internacional de mamá queda fuera del presupuesto.</div>
     <div class="resumen-caja">
-      <h3>Resumen del viaje · por persona</h3>
+      <h3>Resumen del viaje</h3>
       <div class="resumen-grid">
         <div><small>Suma del día a día</small><strong id="resumenDias">—</strong></div>
         <div><small>Promedio por día</small><strong id="resumenPorDia">—</strong></div>
@@ -202,7 +218,7 @@ td .mini.borrar{margin-top:2px}
 
     <h4 class="sub-tit">Lo que llevan gastado día a día <span>(se actualiza solo desde el Itinerario · <span id="agNumDias">28</span> días)</span></h4>
     <table class="tabla-ag">
-      <thead><tr><th>Categoría</th><th class="num-cell">Total acumulado (pp)</th></tr></thead>
+      <thead><tr><th>Categoría</th><th class="num-cell">Total acumulado</th></tr></thead>
       <tbody>
         <tr><td>🚆 Transporte</td><td class="num-cell" id="agTr">—</td></tr>
         <tr><td>🎟 Entradas</td><td class="num-cell" id="agEn">—</td></tr>
@@ -215,7 +231,7 @@ td .mini.borrar{margin-top:2px}
     <h4 class="sub-tit">Gastos globales <span>(los que no pertenecen a ningún día)</span></h4>
     <button class="btn-anadir" id="btnAnadirFila">＋ Añadir fila</button>
     <table>
-      <thead><tr><th>Categoría</th><th>Detalle</th><th class="num-cell">€ Estimado (pp)</th><th class="num-cell">€ Real (pp)</th><th>Notas</th><th></th></tr></thead>
+      <thead><tr><th>Categoría</th><th>Detalle</th><th class="num-cell">€ Estimado</th><th class="num-cell">€ Real</th><th>Notas</th><th></th></tr></thead>
       <tbody id="cuerpoPresupuesto"></tbody>
       <tfoot>
         <tr class="total"><td>Subtotal gastos globales</td><td></td>
@@ -230,7 +246,7 @@ td .mini.borrar{margin-top:2px}
     <div class="kpi"><small>Suma del día a día</small><strong id="kpiDias">0 €</strong></div>
     <div class="kpi"><small>Gastos globales</small><strong id="kpiGlobal">0 €</strong></div>
     <div class="kpi"><small>Promedio por día</small><strong id="kpiPorDia">0 €</strong></div>
-    <div class="kpi total"><small>TOTAL viaje (pp)</small><strong id="kpiTotal">0 €</strong></div>
+    <div class="kpi total"><small>TOTAL viaje</small><strong id="kpiTotal">0 €</strong></div>
   </div>
 </div>
 
@@ -307,6 +323,7 @@ function filaVacia(){ return {cat:"Nueva categoría", det:"", est:"", real:"", n
 function estadoVacio(){
   return {
     v:2,
+    actualizado: null,
     dias: SEED_DIAS.map(d=>({c:d.c, plan:d.plan, t:d.t, fecha:"", aloj:"", notas:"", tr:d.tr, en:d.en, co:d.co, ex:d.ex})),
     res:  SEED_RES.map(r=>({n:r.n, cuando:r.cuando, url:r.url, precio:r.precio, critica:r.critica, estado:"Pendiente", fechaRes:"", conf:"", custom:false})),
     pres: SEED_PRES.map(p=>({cat:p.cat, det:p.det, est:p.est, real:"", notas:"", custom:false}))
@@ -315,7 +332,19 @@ function estadoVacio(){
 let S = estadoVacio();
 
 function guardar(){
+  S.actualizado = new Date().toISOString();
   try{ localStorage.setItem(CLAVE, JSON.stringify(S)); }catch(e){ /* vista previa sin storage */ }
+  pintarSello();
+}
+
+function pintarSello(){
+  const el = document.getElementById("selloFecha");
+  if(!el) return;
+  if(!S.actualizado){ el.textContent = "sin cambios guardados"; return; }
+  const d = new Date(S.actualizado);
+  el.textContent = "última edición en este dispositivo: " +
+    d.toLocaleDateString("es-ES",{day:"numeric",month:"short"}) + " a las " +
+    d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
 }
 
 /* acepta estado v2 nuevo o el formato v1 antiguo (solo campos de usuario) */
@@ -325,6 +354,7 @@ function fusionar(obj){
     const base = estadoVacio();
     S = {
       v:2,
+      actualizado: obj.actualizado || null,
       dias: obj.dias.map(d=>Object.assign(diaVacio(), d)),
       res:  obj.res ? obj.res.map(r=>Object.assign(resVacia(), {custom:false}, r)) : base.res,
       pres: obj.pres? obj.pres.map(p=>Object.assign(filaVacia(), {custom:false}, p)) : base.pres
@@ -355,7 +385,7 @@ function cargarDeURL(){
       fusionar(JSON.parse(json));
       guardar();
       history.replaceState(null,"",location.pathname);
-      avisar("Se cargaron los datos del enlace compartido ✔");
+      avisar("✔ Datos cargados del enlace — ya están guardados en este dispositivo");
       return true;
     }catch(e){ avisar("El enlace no se pudo leer"); }
   }
@@ -442,7 +472,7 @@ function renderDias(){
             <input id="cc${i}" type="number" min="0" step="0.5" placeholder="0" value="${esc(d.co)}" data-k="dias.${i}.co"></div>
           <div class="campo"><label for="cx${i}">✨ Extras</label>
             <input id="cx${i}" type="number" min="0" step="0.5" placeholder="0" value="${esc(d.ex)}" data-k="dias.${i}.ex"></div>
-          <div class="subtotal"><small>Total del día (pp)</small><strong data-sub="${i}">—</strong></div>
+          <div class="subtotal"><small>Total del día</small><strong data-sub="${i}">—</strong></div>
         </div>
       </div>`;
     cont.appendChild(el);
@@ -479,7 +509,7 @@ function renderReservas(){
           <select id="re${i}" data-k="res.${i}.estado">
             ${["Pendiente","Reservado","Pagado"].map(o=>`<option ${o===r.estado?"selected":""}>${o}</option>`).join("")}
           </select></div>
-        <div class="campo"><label for="rp${i}">€ por persona</label>
+        <div class="campo"><label for="rp${i}">€ coste</label>
           <input id="rp${i}" type="number" min="0" step="0.01" value="${esc(r.precio)}" data-k="res.${i}.precio"></div>
         <div class="campo"><label for="rf${i}">Fecha / hora reservada</label>
           <input id="rf${i}" type="text" placeholder="ej. 16/09 · 09:30" value="${esc(r.fechaRes)}" data-k="res.${i}.fechaRes"></div>
@@ -647,16 +677,25 @@ document.querySelectorAll(".tab").forEach(t=>{
 });
 
 /* compartir por enlace */
-document.getElementById("btnCompartir").addEventListener("click", async ()=>{
+async function compartirEnlace(){
   const datos = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
   const url = location.origin + location.pathname + "#d=" + datos;
+  /* en el móvil abre el menú nativo (WhatsApp, Notas, correo...) */
+  if(navigator.share){
+    try{
+      await navigator.share({title:"Viaje de mamá — plan actualizado", url:url});
+      return;
+    }catch(e){ if(e && e.name === "AbortError") return; }
+  }
   try{
     await navigator.clipboard.writeText(url);
-    avisar("Enlace copiado ✔ Envíaselo a mamá por WhatsApp");
+    avisar("Enlace copiado ✔ Pégalo en WhatsApp y ábrelo en el otro dispositivo");
   }catch(e){
-    prompt("Copia este enlace y envíalo:", url);
+    prompt("Copia este enlace y ábrelo en el otro dispositivo:", url);
   }
-});
+}
+document.getElementById("btnCompartir").addEventListener("click", compartirEnlace);
+document.getElementById("btnCompartir2").addEventListener("click", compartirEnlace);
 
 /* exportar / importar */
 document.getElementById("btnExportar").addEventListener("click", ()=>{
@@ -731,6 +770,7 @@ function renderTodo(){ renderDias(); renderReservas(); renderPresupuesto(); rend
 /* ============ ARRANQUE ============ */
 if(!cargarDeURL()) cargarLocal();
 renderTodo();
+pintarSello();
 window.addEventListener("resize", ()=>{ clearTimeout(window._rz); window._rz = setTimeout(autoAltoTodos, 150); });
 </script>
 </body>
